@@ -66,6 +66,17 @@ const char *token_kind_name(Token_Kind kind) {
     return NULL;
 }
 
+void editor_retokenize(Editor *e)
+{
+    e->tokens.count = 0;
+    Lexer l = lexer_new(/* e->atlas,  */e->data.items, e->data.count);
+    Token t = lexer_next(&l);
+    while (t.kind != TOKEN_END) {
+        da_append(&e->tokens, t);
+        t = lexer_next(&l);
+    }
+}
+
 Lexer lexer_new(/* Free_Glyph_Atlas *atlas, */ const char *content, size_t content_len) {
     Lexer l = {0};
     // l.atlas = atlas;

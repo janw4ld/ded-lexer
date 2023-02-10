@@ -41,3 +41,22 @@ defer:
     if (f) fclose(f);
     return result;
 }
+
+Errno editor_load_from_file(Editor *e, const char *file_path)
+{
+    printf("Loading %s\n", file_path);
+
+    e->data.count = 0;
+    Errno err = read_entire_file(file_path, &e->data);
+    if (err != 0) return err;
+
+    // e->cursor = 0;
+
+    editor_retokenize(e);
+
+    e->file_path.count = 0;
+    sb_append_cstr(&e->file_path, file_path);
+    sb_append_null(&e->file_path);
+
+    return 0;
+}

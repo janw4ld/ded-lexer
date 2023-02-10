@@ -1,4 +1,29 @@
+#ifndef COMMON_H_
+#define COMMON_H_
+
 #include <stddef.h>
+#include "lexer.h"
+
+#define DA_INIT_CAP 256
+
+#define da_append(da, item)                                                            \
+    do {                                                                               \
+        if ((da)->count >= (da)->capacity) {                                           \
+            (da)->capacity = (da)->capacity == 0 ? DA_INIT_CAP : (da)->capacity * 2;   \
+            (da)->items = realloc((da)->items, (da)->capacity * sizeof(*(da)->items)); \
+            assert((da)->items != NULL && "Buy more RAM lol");                         \
+        }                                                                              \
+                                                                                       \
+        (da)->items[(da)->count++] = (item);                                           \
+    } while (0)
+
+#define sb_append_cstr(sb, cstr)  \
+    do {                          \
+        const char *s = (cstr);   \
+        size_t n = strlen(s);     \
+        da_append_many(sb, s, n); \
+    } while (0)
+#define sb_append_null(sb) da_append_many(sb, "", 1)
 
 #define UNIMPLEMENTED(...)                                                      \
     do {                                                                        \
@@ -18,10 +43,23 @@
         goto defer;         \
     } while (0)
 
-typedef int Errno;
+typedef uint32_t Errno;
+
 typedef struct {
     char *items;
     size_t count;
     size_t capacity;
 } String_Builder;
+
+typedef struct {
+    String_Builder data;
+    Tokens tokens;
+    String_Builder file_path;
+
+    String_Builder clipboard;
+} Editor;
+
 Errno read_entire_file(const char *file_path, String_Builder *sb);
+Errno editor_load_from_file(Editor *e, const char *file_path);
+
+#endif  // COMMON_H_

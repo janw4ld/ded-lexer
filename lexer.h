@@ -2,6 +2,8 @@
 #define LEXER_H_
 
 #include <stddef.h>
+#include <stdint.h>
+#include "common.h"
 
 typedef enum {
     TOKEN_END = 0,
@@ -25,6 +27,12 @@ typedef struct {
     const char *text;
     size_t text_len;
 } Token;
+
+typedef struct {
+    Token *items;
+    size_t count;
+    size_t capacity;
+} Tokens;
 
 typedef struct {
     const char *content;
