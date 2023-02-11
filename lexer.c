@@ -4,8 +4,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "common.h"
-#include "lexer.h"
+#include "./common.h"
+#include "./lexer.h"
 
 typedef struct {
     Token_Kind kind;
@@ -21,21 +21,21 @@ Literal_Token literal_tokens[] = {
 };
 #define literal_tokens_count (sizeof(literal_tokens) / sizeof(literal_tokens[0]))
 
-const char *keywords[] = { "auto", "break", "case", "char", "const", "continue",
-"default", "do", "double", "else", "enum", "extern", "float", "for", "goto",
-"if", "int", "long", "register", "return", "short", "signed", "sizeof",
-"static", "struct", "switch", "typedef", "union", "unsigned", "void",
-"volatile", "while", "alignas", "alignof", "and", "and_eq", "asm",
-"atomic_cancel", "atomic_commit", "atomic_noexcept", "bitand", "bitor", "bool",
-"catch", "char16_t", "char32_t", "char8_t", "class", "co_await", "co_return",
-"co_yield", "compl", "concept", "const_cast", "consteval", "constexpr",
-"constinit", "decltype", "delete", "dynamic_cast", "explicit", "export",
-"false", "friend", "inline", "mutable", "namespace", "new", "noexcept", "not",
-"not_eq", "nullptr", "operator", "or", "or_eq", "private", "protected",
-"public", "reflexpr", "reinterpret_cast", "requires", "static_assert",
-"static_cast", "synchronized", "template", "this", "thread_local", "throw",
-"true", "try", "typeid", "typename", "using", "virtual", "wchar_t", "xor",
-"xor_eq", };
+const char *keywords[] = {
+    "auto", "break", "case", "char", "const", "continue", "default", "do", "double",
+    "else", "enum", "extern", "float", "for", "goto", "if", "int", "long", "register",
+    "return", "short", "signed", "sizeof", "static", "struct", "switch", "typedef",
+    "union", "unsigned", "void", "volatile", "while", "alignas", "alignof", "and",
+    "and_eq", "asm", "atomic_cancel", "atomic_commit", "atomic_noexcept", "bitand",
+    "bitor", "bool", "catch", "char16_t", "char32_t", "char8_t", "class", "co_await",
+    "co_return", "co_yield", "compl", "concept", "const_cast", "consteval", "constexpr",
+    "constinit", "decltype", "delete", "dynamic_cast", "explicit", "export", "false",
+    "friend", "inline", "mutable", "namespace", "new", "noexcept", "not", "not_eq",
+    "nullptr", "operator", "or", "or_eq", "private", "protected", "public", "reflexpr",
+    "reinterpret_cast", "requires", "static_assert", "static_cast", "synchronized",
+    "template", "this", "thread_local", "throw", "true", "try", "typeid", "typename",
+    "using", "virtual", "wchar_t", "xor", "xor_eq",
+};
 #define keywords_count (sizeof(keywords) / sizeof(keywords[0]))
 
 const char *token_kind_name(Token_Kind kind) {
@@ -61,20 +61,9 @@ const char *token_kind_name(Token_Kind kind) {
         case TOKEN_KEYWORD:
             return "keyword";
         default:
-            UNREACHABLE("token_kind_name");
+            return "WTF??";
     }
     return NULL;
-}
-
-void editor_retokenize(Editor *e)
-{
-    e->tokens.count = 0;
-    Lexer l = lexer_new(/* e->atlas,  */e->data.items, e->data.count);
-    Token t = lexer_next(&l);
-    while (t.kind != TOKEN_END) {
-        da_append(&e->tokens, t);
-        t = lexer_next(&l);
-    }
 }
 
 Lexer lexer_new(/* Free_Glyph_Atlas *atlas, */ const char *content, size_t content_len) {

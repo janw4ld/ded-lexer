@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
-#include "common.h"
+#include <string.h>
+#include "./common.h"
+#include "./lexer.h"
 
 static Errno file_size(FILE *file, size_t *size) {
     long saved = ftell(file);
@@ -40,23 +42,4 @@ Errno read_entire_file(const char *file_path, String_Builder *sb) {
 defer:
     if (f) fclose(f);
     return result;
-}
-
-Errno editor_load_from_file(Editor *e, const char *file_path)
-{
-    printf("Loading %s\n", file_path);
-
-    e->data.count = 0;
-    Errno err = read_entire_file(file_path, &e->data);
-    if (err != 0) return err;
-
-    // e->cursor = 0;
-
-    editor_retokenize(e);
-
-    e->file_path.count = 0;
-    sb_append_cstr(&e->file_path, file_path);
-    sb_append_null(&e->file_path);
-
-    return 0;
 }

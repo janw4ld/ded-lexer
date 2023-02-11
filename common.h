@@ -2,7 +2,8 @@
 #define COMMON_H_
 
 #include <stddef.h>
-#include "lexer.h"
+#include <stdint.h>
+// #include "./lexer.h"
 
 #define DA_INIT_CAP 256
 
@@ -15,6 +16,22 @@
         }                                                                              \
                                                                                        \
         (da)->items[(da)->count++] = (item);                                           \
+    } while (0)
+
+#define da_append_many(da, new_items, new_items_count)                                        \
+    do {                                                                                      \
+        if ((da)->count + new_items_count > (da)->capacity) {                                 \
+            if ((da)->capacity == 0) {                                                        \
+                (da)->capacity = DA_INIT_CAP;                                                 \
+            }                                                                                 \
+            while ((da)->count + new_items_count > (da)->capacity) {                          \
+                (da)->capacity *= 2;                                                          \
+            }                                                                                 \
+            (da)->items = realloc((da)->items, (da)->capacity * sizeof(*(da)->items));        \
+            assert((da)->items != NULL && "Buy more RAM lol");                                \
+        }                                                                                     \
+        memcpy((da)->items + (da)->count, new_items, new_items_count * sizeof(*(da)->items)); \
+        (da)->count += new_items_count;                                                       \
     } while (0)
 
 #define sb_append_cstr(sb, cstr)  \
@@ -51,15 +68,6 @@ typedef struct {
     size_t capacity;
 } String_Builder;
 
-typedef struct {
-    String_Builder data;
-    Tokens tokens;
-    String_Builder file_path;
-
-    String_Builder clipboard;
-} Editor;
-
 Errno read_entire_file(const char *file_path, String_Builder *sb);
-Errno editor_load_from_file(Editor *e, const char *file_path);
 
 #endif  // COMMON_H_
