@@ -7,19 +7,7 @@
 #include "./lexer.h"
 
 typedef struct {
-    size_t begin;
-    size_t end;
-} Line;
-
-typedef struct {
-    Line *items;
-    size_t count;
-    size_t capacity;
-} Lines;
-
-typedef struct {
     String_Builder data;
-    Lines lines;
     Tokens tokens;
 } Editor;
 
@@ -65,30 +53,11 @@ Errno editor_load_from_file(Editor *e, const char *file_path) {
 }
 
 void editor_tokenize(Editor *e) {
-    {  // lines
-        e->lines.count = 0;
-
-        Line line;
-        line.begin = 0;
-
-        for (size_t i = 0; i < e->data.count; ++i) {
-            if (e->data.items[i] == '\n') {
-                line.end = i;
-                da_append(&e->lines, line);
-                line.begin = i + 1;
-            }
-        }
-
-        line.end = e->data.count;
-        da_append(&e->lines, line);
-    }
-    {  // tokens
-        e->tokens.count = 0;
-        Lexer l = lexer_new(e->data.items, e->data.count);
-        Token t = lexer_next(&l);
-        while (t.kind != TOKEN_END) {
-            da_append(&e->tokens, t);
-            t = lexer_next(&l);
-        }
+    e->tokens.count = 0;
+    Lexer l = lexer_new(e->data.items, e->data.count);
+    Token t = lexer_next(&l);
+    while (t.kind != TOKEN_END) {
+        da_append(&e->tokens, t);
+        t = lexer_next(&l);
     }
 }

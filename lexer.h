@@ -38,9 +38,6 @@ typedef struct {
     const char *content;
     size_t content_len;
     size_t cursor;
-    size_t line;
-    size_t bol;
-    float x;
 } Lexer;
 
 Lexer lexer_new(const char *content, size_t content_len);

@@ -94,13 +94,13 @@ void lexer_chop_char(Lexer *l, size_t len) {
     for (size_t i = 0; i < len; ++i) {
         // TODO: get rid of this assert by checking the length of the choped prefix upfront
         assert(l->cursor < l->content_len);
-        char x = l->content[l->cursor];
+        // char x = l->content[l->cursor];
         l->cursor += 1;
-        if (x == '\n') {
+        /* if (x == '\n') {
             l->line += 1;
             l->bol = l->cursor;
             l->x = 0;
-        } /* else {
+        }  else {
             if (l->atlas) {
                 size_t glyph_index = x;
                 // TODO: support for glyphs outside of ASCII range
