@@ -18,35 +18,35 @@ Literal_Token literal_tokens[] = {
     {.text = "{", .kind = TOKEN_OPEN_CURLY},
     {.text = "}", .kind = TOKEN_CLOSE_CURLY},
     {.text = ";", .kind = TOKEN_SEMICOLON},
-//! checking for `comparisons` must be before `literal_tokens`
+    //! checking for `comparisons` must be before `literal_tokens`
     {.text = "=", .kind = TOKEN_ASSIGNMENT},
     {.text = "++", .kind = TOKEN_ARITHMETIC_ASSIGNMENT},
     {.text = "--", .kind = TOKEN_ARITHMETIC_ASSIGNMENT},
 };
-#define literal_tokens_count (sizeof(literal_tokens)/sizeof(literal_tokens[0]))
+#define literal_tokens_count (sizeof(literal_tokens) / sizeof(literal_tokens[0]))
 
 Literal_Token arithmetic_operators[] = {
-    //TODO?: replace with unique kinds for each operator
+    // TODO?: replace with unique kinds for each operator
     {.text = "+", .kind = TOKEN_ARITHMETIC},
     {.text = "-", .kind = TOKEN_ARITHMETIC},
-    {.text = "*", .kind = TOKEN_ARITHMETIC}, //TODO: handle pointers
+    {.text = "*", .kind = TOKEN_ARITHMETIC},  // TODO: handle pointers
     {.text = "/", .kind = TOKEN_ARITHMETIC},
     {.text = "%", .kind = TOKEN_ARITHMETIC},
 };
 #define arithmetic_operators_count \
-    (sizeof(arithmetic_operators)/sizeof(arithmetic_operators[0]))
+    (sizeof(arithmetic_operators) / sizeof(arithmetic_operators[0]))
 
 Literal_Token comparison_operators[] = {
-    //TODO?: replace with unique kinds for each comparison
+    // TODO?: replace with unique kinds for each comparison
     {.text = "==", .kind = TOKEN_COMPARISON},
     {.text = "!=", .kind = TOKEN_COMPARISON},
-    {.text = "<=", .kind = TOKEN_COMPARISON}, //a1: these two tokens
-    {.text = ">=", .kind = TOKEN_COMPARISON}, //a2: have to precede
-    {.text = "<", .kind = TOKEN_COMPARISON},  //b1: these two
-    {.text = ">", .kind = TOKEN_COMPARISON},  //b2:
+    {.text = "<=", .kind = TOKEN_COMPARISON},  // a1: these two tokens
+    {.text = ">=", .kind = TOKEN_COMPARISON},  // a2: have to precede
+    {.text = "<", .kind = TOKEN_COMPARISON},   // b1: these two
+    {.text = ">", .kind = TOKEN_COMPARISON},   // b2:
 };
 #define comparison_operators_count \
-    (sizeof(comparison_operators)/sizeof(comparison_operators[0]))
+    (sizeof(comparison_operators) / sizeof(comparison_operators[0]))
 
 const char *keywords[] = {
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double",
@@ -101,13 +101,13 @@ const char *token_kind_name(Token_Kind kind) {
             return "arithmetic assignment";
         default: break;
     }
-    char error_buffer[25]={0};
+    char error_buffer[25] = {0};
     snprintf(error_buffer, 25, "token_kind_name@kind=%d", kind);
     UNREACHABLE(error_buffer);
     return NULL;
 }
 
-Lexer lexer_new(/* Free_Glyph_Atlas *atlas, */ const char *content, size_t content_len) {
+Lexer lexer_new(const char *content, size_t content_len) {
     Lexer l = {0};
     // l.atlas = atlas;
     l.content = content;
@@ -168,8 +168,7 @@ Token lexer_next(Lexer *l) {
         lexer_chop_char(l, 1);
         while (l->cursor < l->content_len &&
                l->content[l->cursor] != '"' &&
-               l->content[l->cursor] != '\n'
-            ) {
+               l->content[l->cursor] != '\n') {
             lexer_chop_char(l, 1);
         }
         if (l->content[l->cursor] == '"') {
@@ -185,9 +184,6 @@ Token lexer_next(Lexer *l) {
         while (l->cursor < l->content_len && l->content[l->cursor] != '\n') {
             lexer_chop_char(l, 1);
         }
-        // if (l->cursor < l->content_len) {
-        //     lexer_chop_char(l, 1);
-        // }
         token.text_len = &l->content[l->cursor] - token.text;
         return token;
     }
@@ -197,9 +193,6 @@ Token lexer_next(Lexer *l) {
         while (l->cursor < l->content_len && l->content[l->cursor] != '\n') {
             lexer_chop_char(l, 1);
         }
-        // if (l->cursor < l->content_len) {
-        //     lexer_chop_char(l, 1);
-        // }
         token.text_len = &l->content[l->cursor] - token.text;
         return token;
     }
@@ -225,10 +218,10 @@ Token lexer_next(Lexer *l) {
             return token;
         }
     }
-    
+
     for (size_t i = 0; i < arithmetic_operators_count; ++i) {
         if (lexer_starts_with(l, arithmetic_operators[i].text)) {
-            // NOTE: this code assumes that there is no newlines in literal_tokens[i].text
+            // NOTE: this code assumes that there is no newlines in arithmetic_operators_count[i].text
             size_t text_len = strlen(arithmetic_operators[i].text);
             Token_Kind kind = TOKEN_ARITHMETIC;
             lexer_chop_char(l, text_len);
@@ -252,7 +245,8 @@ Token lexer_next(Lexer *l) {
 
         for (size_t i = 0; i < keywords_count; ++i) {
             size_t keyword_len = strlen(keywords[i]);
-            if (keyword_len == token.text_len && memcmp(keywords[i], token.text, keyword_len) == 0) {
+            if (keyword_len == token.text_len &&
+                memcmp(keywords[i], token.text, keyword_len) == 0) {
                 token.kind = TOKEN_KEYWORD;
                 break;
             }

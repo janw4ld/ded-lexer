@@ -3,7 +3,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-// #include "./lexer.h"
 
 #define DA_INIT_CAP 256
 
