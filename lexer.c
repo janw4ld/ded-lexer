@@ -19,7 +19,18 @@ Literal_Token literal_tokens[] = {
     {.text = "}", .kind = TOKEN_CLOSE_CURLY},
     {.text = ";", .kind = TOKEN_SEMICOLON},
 };
-#define literal_tokens_count (sizeof(literal_tokens) / sizeof(literal_tokens[0]))
+#define literal_tokens_count (sizeof(literal_tokens)/sizeof(literal_tokens[0]))
+
+Literal_Token arithmetic_operators[] = {
+    //TODO?: replace with unique kinds for each operator 
+    {.text = "+", .kind = TOKEN_ARITHMETIC},
+    {.text = "-", .kind = TOKEN_ARITHMETIC},
+    {.text = "*", .kind = TOKEN_ARITHMETIC}, //TODO: handle pointer dereference
+    {.text = "/", .kind = TOKEN_ARITHMETIC},
+    {.text = "%", .kind = TOKEN_ARITHMETIC},
+};
+#define arithmetic_operators_count \
+    (sizeof(arithmetic_operators)/sizeof(arithmetic_operators[0]))
 
 const char *keywords[] = {
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double",
@@ -64,11 +75,18 @@ const char *token_kind_name(Token_Kind kind) {
             return "semicolon";
         case TOKEN_KEYWORD:
             return "keyword";
-        default:;
-            char error_buffer[25]={0};
-            snprintf(error_buffer, 25, "token_kind_name@kind=%d", kind);
-            UNREACHABLE(error_buffer);
+        default: break;
     }
+    switch(kind^TOKEN_ARITHMETIC){
+        case 0:
+            return "arithmetic operator";
+        case TOKEN_ASSIGNMENT:
+            return "arithmetic assignment";
+        default: break;
+    }
+    char error_buffer[25]={0};
+    snprintf(error_buffer, 25, "token_kind_name@kind=%d", kind);
+    UNREACHABLE(error_buffer);
     return NULL;
 }
 
@@ -100,23 +118,7 @@ void lexer_chop_char(Lexer *l, size_t len) {
     for (size_t i = 0; i < len; ++i) {
         // TODO: get rid of this assert by checking the length of the choped prefix upfront
         assert(l->cursor < l->content_len);
-        // char x = l->content[l->cursor];
         l->cursor += 1;
-        /* if (x == '\n') {
-            l->line += 1;
-            l->bol = l->cursor;
-            l->x = 0;
-        }  else {
-            if (l->atlas) {
-                size_t glyph_index = x;
-                // TODO: support for glyphs outside of ASCII range
-                if (glyph_index >= GLYPH_METRICS_CAPACITY) {
-                    glyph_index = '?';
-                }
-                Glyph_Metric metric = l->atlas->metrics[glyph_index];
-                l->x += metric.ax;
-            }
-        } */
     }
 }
 
@@ -141,9 +143,6 @@ Token lexer_next(Lexer *l) {
         .text = &l->content[l->cursor],
     };
 
-    // token.position.x = l->x;
-    // token.position.y = -(float)l->line;
-
     if (l->cursor >= l->content_len) return token;
 
     if (l->content[l->cursor] == '"') {
@@ -151,8 +150,8 @@ Token lexer_next(Lexer *l) {
         token.kind = TOKEN_STRING;
         lexer_chop_char(l, 1);
         while (l->cursor < l->content_len &&
-               l->content[l->cursor] != '"' //&&
-                // l->content[l->cursor] != '\n'
+               l->content[l->cursor] != '"' &&
+               l->content[l->cursor] != '\n'
             ) {
             lexer_chop_char(l, 1);
         }
@@ -195,6 +194,23 @@ Token lexer_next(Lexer *l) {
             token.kind = literal_tokens[i].kind;
             token.text_len = text_len;
             lexer_chop_char(l, text_len);
+            return token;
+        }
+    }
+    
+    for (size_t i = 0; i < arithmetic_operators_count; ++i) {
+        if (lexer_starts_with(l, arithmetic_operators[i].text)) {
+            // NOTE: this code assumes that there is no newlines in literal_tokens[i].text
+            size_t text_len = strlen(arithmetic_operators[i].text);
+            Token_Kind kind = TOKEN_ARITHMETIC;
+            lexer_chop_char(l, text_len);
+            if (lexer_starts_with(l, "=")) {
+                text_len += 1;
+                kind &= TOKEN_ASSIGNMENT;
+                lexer_chop_char(l, 1);
+            }
+            token.kind = kind;
+            token.text_len = text_len;
             return token;
         }
     }

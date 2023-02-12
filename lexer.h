@@ -18,6 +18,9 @@ typedef enum {
     TOKEN_KEYWORD,
     TOKEN_COMMENT,
     TOKEN_STRING,
+    TOKEN_ARITHMETIC,
+    TOKEN_ASSIGNMENT =0x0F00000,
+    TOKEN_COMPARISON=0xF000000,
 } Token_Kind;
 
 const char *token_kind_name(Token_Kind kind);

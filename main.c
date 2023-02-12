@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
         editor_tokenize(&e);
         for (uint32_t n = 0; n <= e.tokens.count; ++n) {
             Token t = e.tokens.items[n];
-            printf("%.*s\t---\t%s\n", (uint32_t)t.text_len, t.text,
+            printf("---\ntoken:%.*s\nkind:%s\n", (uint32_t)t.text_len, t.text,
                    token_kind_name(t.kind));
         }
     }
