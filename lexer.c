@@ -18,19 +18,35 @@ Literal_Token literal_tokens[] = {
     {.text = "{", .kind = TOKEN_OPEN_CURLY},
     {.text = "}", .kind = TOKEN_CLOSE_CURLY},
     {.text = ";", .kind = TOKEN_SEMICOLON},
+//! checking for `comparisons` must be before `literal_tokens`
+    {.text = "=", .kind = TOKEN_ASSIGNMENT},
+    {.text = "++", .kind = TOKEN_ARITHMETIC_ASSIGNMENT},
+    {.text = "--", .kind = TOKEN_ARITHMETIC_ASSIGNMENT},
 };
 #define literal_tokens_count (sizeof(literal_tokens)/sizeof(literal_tokens[0]))
 
 Literal_Token arithmetic_operators[] = {
-    //TODO?: replace with unique kinds for each operator 
+    //TODO?: replace with unique kinds for each operator
     {.text = "+", .kind = TOKEN_ARITHMETIC},
     {.text = "-", .kind = TOKEN_ARITHMETIC},
-    {.text = "*", .kind = TOKEN_ARITHMETIC}, //TODO: handle pointer dereference
+    {.text = "*", .kind = TOKEN_ARITHMETIC}, //TODO: handle pointers
     {.text = "/", .kind = TOKEN_ARITHMETIC},
     {.text = "%", .kind = TOKEN_ARITHMETIC},
 };
 #define arithmetic_operators_count \
     (sizeof(arithmetic_operators)/sizeof(arithmetic_operators[0]))
+
+Literal_Token comparison_operators[] = {
+    //TODO?: replace with unique kinds for each comparison
+    {.text = "==", .kind = TOKEN_COMPARISON},
+    {.text = "!=", .kind = TOKEN_COMPARISON},
+    {.text = "<=", .kind = TOKEN_COMPARISON}, //a1: these two tokens
+    {.text = ">=", .kind = TOKEN_COMPARISON}, //a2: have to precede
+    {.text = "<", .kind = TOKEN_COMPARISON},  //b1: these two
+    {.text = ">", .kind = TOKEN_COMPARISON},  //b2:
+};
+#define comparison_operators_count \
+    (sizeof(comparison_operators)/sizeof(comparison_operators[0]))
 
 const char *keywords[] = {
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double",
@@ -75,12 +91,13 @@ const char *token_kind_name(Token_Kind kind) {
             return "semicolon";
         case TOKEN_KEYWORD:
             return "keyword";
-        default: break;
-    }
-    switch(kind^TOKEN_ARITHMETIC){
-        case 0:
-            return "arithmetic operator";
+        case TOKEN_COMPARISON:
+            return "comparison operator";
         case TOKEN_ASSIGNMENT:
+            return "assignment";
+        case TOKEN_ARITHMETIC:
+            return "arithmetic operator";
+        case TOKEN_ARITHMETIC_ASSIGNMENT:
             return "arithmetic assignment";
         default: break;
     }
@@ -185,6 +202,17 @@ Token lexer_next(Lexer *l) {
         // }
         token.text_len = &l->content[l->cursor] - token.text;
         return token;
+    }
+
+    for (size_t i = 0; i < comparison_operators_count; ++i) {
+        if (lexer_starts_with(l, comparison_operators[i].text)) {
+            // NOTE: this code assumes that there is no newlines in comparisons[i].text
+            size_t text_len = strlen(comparison_operators[i].text);
+            token.kind = comparison_operators[i].kind;
+            token.text_len = text_len;
+            lexer_chop_char(l, text_len);
+            return token;
+        }
     }
 
     for (size_t i = 0; i < literal_tokens_count; ++i) {
