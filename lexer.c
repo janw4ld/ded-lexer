@@ -46,6 +46,10 @@ const char *token_kind_name(Token_Kind kind) {
             return "invalid token";
         case TOKEN_PREPROC:
             return "preprocessor directive";
+        case TOKEN_COMMENT:
+            return "comment";
+        case TOKEN_STRING:
+            return "string";
         case TOKEN_SYMBOL:
             return "symbol";
         case TOKEN_OPEN_PAREN:
@@ -60,8 +64,10 @@ const char *token_kind_name(Token_Kind kind) {
             return "semicolon";
         case TOKEN_KEYWORD:
             return "keyword";
-        default:
-            return "WTF??";
+        default:;
+            char error_buffer[25]={0};
+            snprintf(error_buffer, 25, "token_kind_name@kind=%d", kind);
+            UNREACHABLE(error_buffer);
     }
     return NULL;
 }
@@ -145,11 +151,12 @@ Token lexer_next(Lexer *l) {
         token.kind = TOKEN_STRING;
         lexer_chop_char(l, 1);
         while (l->cursor < l->content_len &&
-               l->content[l->cursor] != '"' &&
-               l->content[l->cursor] != '\n') {
+               l->content[l->cursor] != '"' //&&
+                // l->content[l->cursor] != '\n'
+            ) {
             lexer_chop_char(l, 1);
         }
-        if (l->cursor < l->content_len) {
+        if (l->content[l->cursor] == '"') {
             lexer_chop_char(l, 1);
         }
         token.text_len = &l->content[l->cursor] - token.text;
@@ -162,9 +169,9 @@ Token lexer_next(Lexer *l) {
         while (l->cursor < l->content_len && l->content[l->cursor] != '\n') {
             lexer_chop_char(l, 1);
         }
-        if (l->cursor < l->content_len) {
-            lexer_chop_char(l, 1);
-        }
+        // if (l->cursor < l->content_len) {
+        //     lexer_chop_char(l, 1);
+        // }
         token.text_len = &l->content[l->cursor] - token.text;
         return token;
     }
@@ -174,9 +181,9 @@ Token lexer_next(Lexer *l) {
         while (l->cursor < l->content_len && l->content[l->cursor] != '\n') {
             lexer_chop_char(l, 1);
         }
-        if (l->cursor < l->content_len) {
-            lexer_chop_char(l, 1);
-        }
+        // if (l->cursor < l->content_len) {
+        //     lexer_chop_char(l, 1);
+        // }
         token.text_len = &l->content[l->cursor] - token.text;
         return token;
     }
