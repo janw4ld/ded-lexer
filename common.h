@@ -1,7 +1,6 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#include <stddef.h>
 #include <stdint.h>
 
 #define DA_INIT_CAP 256

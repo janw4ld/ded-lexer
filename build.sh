@@ -2,7 +2,7 @@
 
 set -xe
 
-CC="${CXX:-cc}"
+CC="gcc"
 CFLAGS="-Wall -Wextra -std=c11 -pedantic"
 LIBS=-lm
 SRC="main.c common.c lexer.c"
